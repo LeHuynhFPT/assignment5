@@ -64,33 +64,52 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   final TextEditingController phoneNumberController = TextEditingController();
 
   void submitStudent() {
-    String name = nameController.text;
-    String phoneNumber = phoneNumberController.text;
+    String name = nameController.text.trim();
+    String phoneNumber = phoneNumberController.text.trim();
 
-    // Kiểm tra xem số điện thoại đã tồn tại trong danh sách chưa
-    bool isPhoneNumberExists = widget.studentList.isPhoneNumberExists(phoneNumber);
+    // Kiểm tra xem tên và số điện thoại có trống không
+    if (name.isNotEmpty && phoneNumber.isNotEmpty) {
+      // Kiểm tra xem số điện thoại đã tồn tại trong danh sách chưa
+      bool isPhoneNumberExists = widget.studentList.isPhoneNumberExists(phoneNumber);
 
-    if (phoneNumber.isNotEmpty &&
-        phoneNumber.length == 10 &&
-        phoneNumber.startsWith('0') &&
-        !isPhoneNumberExists) {
-      // Nếu số điện thoại không trùng và đúng định dạng, thêm vào danh sách
-      Student newStudent = Student(name: name, phoneNumber: phoneNumber);
+      if (phoneNumber.length == 10 && phoneNumber.startsWith('0') && !isPhoneNumberExists) {
+        // Nếu số điện thoại không trùng và đúng định dạng, thêm vào danh sách
+        Student newStudent = Student(name: name, phoneNumber: phoneNumber);
 
-      widget.studentList.addStudent(newStudent);
+        widget.studentList.addStudent(newStudent);
 
-      nameController.clear();
-      phoneNumberController.clear();
+        nameController.clear();
+        phoneNumberController.clear();
 
-      setState(() {});
+        setState(() {});
+      } else {
+        // Hiển thị cảnh báo cho số điện thoại trùng hoặc sai định dạng
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(isPhoneNumberExists ? 'Số điện thoại đã tồn tại' : 'Sai định dạng số điện thoại'),
+              content: Text(isPhoneNumberExists ? 'Vui lòng nhập số điện thoại khác.' : 'Vui lòng nhập đúng định dạng số điện thoại bắt đầu bằng số 0 và bao gồm 10 số.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
     } else {
-      // Hiển thị cảnh báo cho số điện thoại trùng hoặc sai định dạng
+      // Hiển thị cảnh báo cho trường thông tin bị trống
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text(isPhoneNumberExists ? 'Số điện thoại đã tồn tại' : 'Sai định dạng số điện thoại'),
-            content: Text(isPhoneNumberExists ? 'Vui lòng nhập số điện thoại khác.' : 'Vui lòng nhập đúng định dạng số điện thoại bắt đầu bằng số 0 và bao gồm 10 số.'),
+            title: Text('Thông tin không đầy đủ'),
+            content: Text('Vui lòng nhập đầy đủ thông tin tên và số điện thoại.'),
             actions: [
               TextButton(
                 onPressed: () {
